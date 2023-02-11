@@ -1,3 +1,5 @@
+package com.example.graph_editor.server;
+
 import java.net.*;
 import java.io.*;
 import java.util.Scanner;
@@ -117,6 +119,7 @@ public class Server {
         public Parser() {
             try {
                 File file = new File("server.config");
+                file.mkdirs();
                 Scanner scanner = new Scanner(file);
                 while(scanner.hasNext()) {
                     String s = scanner.next();
