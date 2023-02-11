@@ -120,10 +120,10 @@ public class Server {
                 Scanner scanner = new Scanner(file);
                 while(scanner.hasNext()) {
                     String s = scanner.next();
-                    if(s.equals("PORT")) {
+                    if(s.equalsIgnoreCase("PORT")) {
                         this.port = scanner.nextInt();
                     }
-                    else if(s.equals("DIRECTORY")) {
+                    else if(s.equalsIgnoreCase("DIRECTORY")) {
                         this.pluginsDirectory = scanner.next();
                     }
                     else
