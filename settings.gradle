@@ -3,4 +3,6 @@ include 'plugins'
 include 'server'
 include 'plugins:turbo_matching'
 findProject(':plugins:turbo_matching')?.name = 'turbo_matching'
+include 'plugins:empty_plugin'
+findProject(':plugins:empty_plugin')?.name = 'empty_plugin'
 
