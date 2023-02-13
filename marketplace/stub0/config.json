@@ -1,4 +1,5 @@
 {
   "jarName" : "graph-editor-plugin-server.plugins.empty_plugin.main.jar",
-  "pluginClassName" : "com.example.graph_editor.plugins.empty.Stub"
+  "pluginClassName" : "com.example.graph_editor.plugins.empty.Stub",
+  "version" : 1
 }

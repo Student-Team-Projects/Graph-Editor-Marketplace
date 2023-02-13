@@ -2,9 +2,11 @@ package com.example.graph_editor.plugins.turbo_matching;
 
 import graph_editor.extensions.OnOptionSelection;
 import graph_editor.extensions.Plugin;
-import graph_editor.graph.VersionStack;
-import graph_editor.graph.Vertex;
+import graph_editor.graph.*;
+import graph_editor.properties.GraphDebuilder;
+import graph_editor.properties.PropertyGraphBuilder;
 import graph_editor.properties.PropertySupportingGraph;
+import graph_editor.visual.BuilderVisualizer;
 import graph_editor.visual.GraphVisualization;
 
 import java.util.HashMap;
@@ -13,14 +15,12 @@ import java.util.Map;
 import java.util.Set;
 
 public class TurboMatching implements Plugin {
-    private static final String releasePath = "marketplace/";
-    private static final String pluginDirectory = "bipartite_matching";
+    private static final String vertexProperty = "color::matching::vertex_color";
+    private static final String edgeProperty = "color::matching::edgeStatus";
 
     @Override
     public void activate(Proxy proxy) {
-        System.out.println("activating...");
         proxy.registerOption(this, "evaluate matching", new Handler());
-        System.out.println("activated");
     }
 
     @Override
@@ -32,20 +32,15 @@ public class TurboMatching implements Plugin {
         public void handle(VersionStack<GraphVisualization<PropertySupportingGraph>> versionStack) {
             PropertySupportingGraph graph = versionStack.getCurrent().getGraph();
             Iterable<Vertex> vertices = graph.getVertices();
-            if (isBipartite(vertices)) {
-                System.out.println("Is bipartite!");
+            VertexColouring colouring = isBipartite(vertices);
+            GraphVisualization<PropertySupportingGraph> visualization;
+            if (colouring.isBipartite) {
                 Map<Vertex, Vertex> matching = evaluateMatching(vertices);
-                for (Vertex v : vertices) {
-                    if (matching.get(v) != null) {
-                        System.out.println(v.getIndex() + " matches " + matching.get(v).getIndex());
-                    } else {
-                        System.out.println(v.getIndex() + " does not match any vertex");
-                    }
-                }
-                System.out.println("Computed matching!");
+                visualization = saveProperties(versionStack.getCurrent(), colouring.green, matching);
             } else {
-                System.out.println("Your graph is not bipartite!");
+                visualization = resetProperties(versionStack.getCurrent());
             }
+            versionStack.push(visualization);
         }
 
         private boolean visit(Vertex v, Set<Vertex> vColor, Set<Vertex> otherColor) {
@@ -62,20 +57,30 @@ public class TurboMatching implements Plugin {
             return false;
         }
 
-        private boolean isBipartite(Iterable<Vertex> vertices) {
+        private static class VertexColouring {
+            private final boolean isBipartite;
+            private final Set<Vertex> green;
+            private final Set<Vertex> red;
+            private VertexColouring(boolean isBipartite, Set<Vertex> green, Set<Vertex> red) {
+                this.isBipartite = isBipartite;
+                this.green = green;
+                this.red = red;
+            }
+
+        }
+        private VertexColouring isBipartite(Iterable<Vertex> vertices) {
             Set<Vertex> green = new HashSet<>();
             Set<Vertex> red = new HashSet<>();
             for (Vertex v : vertices) {
                 if (!green.contains(v) && !red.contains(v)) {
                     green.add(v);
                     if (visit(v, green, red)) {
-                        return false;
+                        return new VertexColouring(false, green, red);
                     }
                 }
             }
-            return true;
+            return new VertexColouring(true, green, red);
         }
-
         private Map<Vertex, Vertex> evaluateMatching(Iterable<Vertex> vertices) {
             Map<Vertex, Vertex> match = new HashMap<>();
             while (true) {
@@ -103,6 +108,33 @@ public class TurboMatching implements Plugin {
             }
             return false;
         }
-    }
 
+        private GraphVisualization<PropertySupportingGraph> saveProperties(GraphVisualization<PropertySupportingGraph> visualization, Set<Vertex> green, Map<Vertex, Vertex> matching) {
+            PropertySupportingGraph graph = visualization.getGraph();
+            GraphBuilder builder = new SimpleGraphBuilder(graph.getVertices().size());
+            BuilderVisualizer visualizer = new BuilderVisualizer();
+            PropertyGraphBuilder propertyGraphBuilder = GraphDebuilder.deBuild(graph, builder, visualizer, visualization.getVisualization().entrySet());
+            propertyGraphBuilder.registerProperty(vertexProperty);
+            for (Vertex v : graph.getVertices()) {
+                propertyGraphBuilder.addElementProperty(v, vertexProperty, green.contains(v) ? "0x00ff00" : "0xff0000");
+            }
+            propertyGraphBuilder.registerProperty(edgeProperty);
+            for (Edge e : graph.getEdges()) {
+                propertyGraphBuilder.addElementProperty(
+                        e,
+                        edgeProperty,
+                        matching.get(e.getSource()).equals(e.getTarget()) ? "matching" : "non_matching"
+                );
+            }
+            return visualizer.generateVisual(propertyGraphBuilder.build());
+        }
+        private GraphVisualization<PropertySupportingGraph> resetProperties(GraphVisualization<PropertySupportingGraph> visualization) {
+            PropertySupportingGraph graph = visualization.getGraph();
+            GraphBuilder builder = new SimpleGraphBuilder(graph.getVertices().size());
+            BuilderVisualizer visualizer = new BuilderVisualizer();
+            PropertyGraphBuilder propertyGraphBuilder = GraphDebuilder.deBuild(graph, builder, visualizer, visualization.getVisualization().entrySet());
+            propertyGraphBuilder.registerProperty(vertexProperty);
+            return visualizer.generateVisual(propertyGraphBuilder.build());
+        }
+    }
 }

@@ -1,4 +1,5 @@
 {
   "jarName" : "graph-editor-plugin-server.plugins.turbo_matching.main.jar",
-  "pluginClassName" : "com.example.graph_editor.plugins.turbo_matching.TurboMatching"
+  "pluginClassName" : "com.example.graph_editor.plugins.turbo_matching.TurboMatching",
+  "version" : 2
 }
