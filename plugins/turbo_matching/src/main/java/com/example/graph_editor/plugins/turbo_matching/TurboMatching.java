@@ -9,14 +9,12 @@ import graph_editor.properties.PropertySupportingGraph;
 import graph_editor.visual.BuilderVisualizer;
 import graph_editor.visual.GraphVisualization;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-public class TurboMatching implements Plugin {
-    private static final String vertexProperty = "color::matching::vertex_color";
-    private static final String edgeProperty = "color::matching::edgeStatus";
+public class TurboMatching implements Plugin<Plugin.Proxy> {
+    private static final String vertexProperty = "color::vertex::turbo_matching";
+    private static final String edgeProperty = "color::edge::turbo_matching";
+    private static final Iterable<String> used = Arrays.asList(vertexProperty, edgeProperty);
 
     @Override
     public void activate(Proxy proxy) {
@@ -27,6 +25,12 @@ public class TurboMatching implements Plugin {
     public void deactivate(Proxy proxy) {
         proxy.releasePluginResources(this);
     }
+
+    @Override
+    public Iterable<String> usedPropertiesNames() {
+        return used;
+    }
+
     private static class Handler implements OnOptionSelection {
         @Override
         public void handle(VersionStack<GraphVisualization<PropertySupportingGraph>> versionStack) {
