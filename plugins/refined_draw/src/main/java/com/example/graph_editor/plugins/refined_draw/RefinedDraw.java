@@ -1,7 +1,6 @@
 package com.example.graph_editor.plugins.refined_draw;
 
-import graph_editor.draw.AbstractGraphDrawer;
-import graph_editor.draw.GraphDrawer;
+import graph_editor.draw.IGraphDrawer;
 import graph_editor.draw.point_mapping.CanvasDrawer;
 import graph_editor.draw.point_mapping.PointMapper;
 import graph_editor.extensions.DrawingBehaviour;
@@ -17,10 +16,11 @@ import graph_editor.properties.PropertyUser;
 import graph_editor.visual.GraphVisualization;
 
 import java.util.*;
+import java.util.List;
 
 public class RefinedDraw implements DrawingPlugin {
     private static final String vertexGroup = "color::vertex::";
-    private static final String vertexSecondRing = "color::vertex2::";
+    private static final String vertexGroup2 = "color::vertex2::";
     private static final String edgeGroup = "color::edge::";
 
     private final Behaviour behaviour = new Behaviour();
@@ -42,7 +42,7 @@ public class RefinedDraw implements DrawingPlugin {
     }
 
     @Override
-    public GraphDrawer<PropertySupportingGraph> getGraphDrawer(PointMapper mapper, CanvasDrawer canvasDrawer) {
+    public IGraphDrawer<PropertySupportingGraph> getGraphDrawer(PointMapper mapper, CanvasDrawer canvasDrawer) {
         return manager.getDrawer(mapper, canvasDrawer);
     }
     private static class Behaviour implements DrawingBehaviour {
@@ -57,7 +57,7 @@ public class RefinedDraw implements DrawingPlugin {
             for (PropertyUser user : list) {
                 Iterable<String> used = user.usedPropertiesNames();
                 for (String propertyName : used) {
-                    if (propertyName.startsWith(vertexGroup) || propertyName.startsWith(vertexSecondRing) || propertyName.startsWith(edgeGroup)) {
+                    if (propertyName.startsWith(vertexGroup) || propertyName.startsWith(vertexGroup2) || propertyName.startsWith(edgeGroup)) {
                         result.add(new Choice(propertyName, behaviour));
                     }
                 }
@@ -65,7 +65,7 @@ public class RefinedDraw implements DrawingPlugin {
             return result;
         }
 
-        public GraphDrawer<PropertySupportingGraph> getDrawer(PointMapper mapper, CanvasDrawer canvasDrawer) {
+        public IGraphDrawer<PropertySupportingGraph> getDrawer(PointMapper mapper, CanvasDrawer canvasDrawer) {
             return new Drawer(mapper, canvasDrawer, behaviour);
         }
     }
@@ -84,7 +84,7 @@ public class RefinedDraw implements DrawingPlugin {
         public void choose() {
             if (name.startsWith(vertexGroup)) {
                 behaviour.vertexBehaviour = name;
-            } else if (name.startsWith(vertexSecondRing)) {
+            } else if (name.startsWith(vertexGroup2)) {
                 behaviour.vertexBehaviour2 = name;
             } else {
                 behaviour.edgeBehaviour = name;
@@ -92,15 +92,12 @@ public class RefinedDraw implements DrawingPlugin {
         }
     }
 
-    private static class Drawer extends AbstractGraphDrawer<PropertySupportingGraph> {
+    private static class Drawer implements IGraphDrawer<PropertySupportingGraph> {
         private static final float radius = 20.0f;
+        private static final int defaultColor = 0x00000000; //black
         private final PointMapper mapper;
         private final CanvasDrawer drawer;
         private final Behaviour behaviour;
-
-        private Map<Vertex, String> vertexColor;
-        private Map<Vertex, String> vertexColor2;
-        private Map<Edge, String> edgeColor;
 
         private Drawer(PointMapper mapper, CanvasDrawer drawer, Behaviour behaviour) {
             this.mapper = mapper;
@@ -110,32 +107,45 @@ public class RefinedDraw implements DrawingPlugin {
 
         @Override
         public void drawGraph(GraphVisualization<PropertySupportingGraph> visual) {
-            super.drawGraph(visual);
-            vertexColor = new HashMap<>();
-            vertexColor2 = new HashMap<>();
-            edgeColor = new HashMap<>();
-            readColors(visual.getGraph());
-        }
+            Map<Vertex, String> vertexColor = new HashMap<>();
+            Map<Vertex, String> vertexColor2 = new HashMap<>();
+            Map<Edge, String> edgeColor = new HashMap<>();
 
-        @Override
-        protected void moveCursorTo(Point point) {
-            drawer.drawCircle(mapper.mapIntoView(point), radius, );
-        }
-
-        @Override
-        protected void drawLineTo(Point point) {
-
-        }
-
-        @Override
-        protected void drawCircle(Point point) {
-
-        }
-
-        private void readColors(PropertySupportingGraph graph) {
+            PropertySupportingGraph graph = visual.getGraph();
             readToMap(graph, behaviour.vertexBehaviour, graph.getVertices(), vertexColor);
             readToMap(graph, behaviour.vertexBehaviour2, graph.getVertices(), vertexColor2);
             readToMap(graph, behaviour.edgeBehaviour, graph.getEdges(), edgeColor);
+
+            Map<Vertex, Point> coordinates = visual.getVisualization();
+            for (Vertex v : graph.getVertices()) {
+                int color = toInt(vertexColor2.get(v));
+                drawer.drawCircle(mapper.mapIntoView(
+                        coordinates.get(v)),
+                        radius,
+                        behaviour.vertexBehaviour2 == null ? defaultColor : color);
+            }
+            for (Vertex v : graph.getVertices()) {
+                int color = toInt(vertexColor.get(v));
+                drawer.drawCircle(mapper.mapIntoView(
+                                coordinates.get(v)),
+                        radius / 2,
+                        behaviour.vertexBehaviour == null ? defaultColor : color);
+            }
+            for (Edge e : graph.getEdges()) {
+                int color = toInt(edgeColor.get(e));
+                drawer.drawLine(
+                        mapper.mapIntoView(coordinates.get(e.getSource())),
+                        mapper.mapIntoView(coordinates.get(e.getTarget())),
+                        behaviour.vertexBehaviour == null ? defaultColor : color
+                );
+            }
+        }
+        private static int toInt(String s) {
+            try {
+                return Integer.parseInt(s);
+            } catch (Exception e) {
+                return Drawer.defaultColor;
+            }
         }
 
         private <T extends GraphElement> void readToMap(PropertyRepository repository,  String propertyName, Iterable<T> source, Map<T, String> target) {

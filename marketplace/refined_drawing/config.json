@@ -1,0 +1,6 @@
+{
+  "jarName" : "graph-editor-plugin-server.plugins.refined_draw.main.jar",
+  "pluginClassName" : "com.example.graph_editor.plugins.refined_draw.RefinedDraw",
+  "version" : 1,
+  "requiresDrawingPermission" : true
+}
