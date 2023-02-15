@@ -1,7 +1,7 @@
 package com.example.graph_editor.plugins.turbo_matching;
 
-import graph_editor.extensions.OnOptionSelection;
-import graph_editor.extensions.Plugin;
+import graph_editor.extensions.EditingPlugin;
+import graph_editor.extensions.OnGraphOptionSelection;
 import graph_editor.graph.*;
 import graph_editor.properties.GraphDebuilder;
 import graph_editor.properties.PropertyGraphBuilder;
@@ -11,18 +11,18 @@ import graph_editor.visual.GraphVisualization;
 
 import java.util.*;
 
-public class TurboMatching implements Plugin<Plugin.Proxy> {
+public class TurboMatching implements EditingPlugin {
     private static final String vertexProperty = "color::vertex::turbo_matching";
     private static final String edgeProperty = "color::edge::turbo_matching";
     private static final Iterable<String> used = Arrays.asList(vertexProperty, edgeProperty);
 
     @Override
-    public void activate(Proxy proxy) {
-        proxy.registerOption(this, "evaluate matching", new Handler());
+    public void activate(Proxy<OnGraphOptionSelection> proxy) {
+        proxy.registerOnSelection(this, "evaluate matching", new Handler());
     }
 
     @Override
-    public void deactivate(Proxy proxy) {
+    public void deactivate(Proxy<OnGraphOptionSelection> proxy) {
         proxy.releasePluginResources(this);
     }
 
@@ -31,7 +31,7 @@ public class TurboMatching implements Plugin<Plugin.Proxy> {
         return used;
     }
 
-    private static class Handler implements OnOptionSelection {
+    private static class Handler implements OnGraphOptionSelection {
         @Override
         public void handle(VersionStack<GraphVisualization<PropertySupportingGraph>> versionStack) {
             PropertySupportingGraph graph = versionStack.getCurrent().getGraph();
@@ -115,7 +115,7 @@ public class TurboMatching implements Plugin<Plugin.Proxy> {
 
         private GraphVisualization<PropertySupportingGraph> saveProperties(GraphVisualization<PropertySupportingGraph> visualization, Set<Vertex> green, Map<Vertex, Vertex> matching) {
             PropertySupportingGraph graph = visualization.getGraph();
-            GraphBuilder builder = new SimpleGraphBuilder(graph.getVertices().size());
+            UndirectedGraph.Builder builder = new UndirectedGraph.Builder(graph.getVertices().size());
             BuilderVisualizer visualizer = new BuilderVisualizer();
             PropertyGraphBuilder propertyGraphBuilder = GraphDebuilder.deBuild(graph, builder, visualizer, visualization.getVisualization().entrySet());
             propertyGraphBuilder.registerProperty(vertexProperty);
@@ -134,7 +134,7 @@ public class TurboMatching implements Plugin<Plugin.Proxy> {
         }
         private GraphVisualization<PropertySupportingGraph> resetProperties(GraphVisualization<PropertySupportingGraph> visualization) {
             PropertySupportingGraph graph = visualization.getGraph();
-            GraphBuilder builder = new SimpleGraphBuilder(graph.getVertices().size());
+            UndirectedGraph.Builder builder = new UndirectedGraph.Builder(graph.getVertices().size());
             BuilderVisualizer visualizer = new BuilderVisualizer();
             PropertyGraphBuilder propertyGraphBuilder = GraphDebuilder.deBuild(graph, builder, visualizer, visualization.getVisualization().entrySet());
             propertyGraphBuilder.registerProperty(vertexProperty);

@@ -1,0 +1,4 @@
+0. write config.json
+1. build jar from intellij artifacts
+2. dalvik-exchange --dex --min-sdk-version=26 --output classes.dex graph-editor-plugin-server.plugins.refined_draw.main.jar
+3. aapt add graph-editor-plugin-server.plugins.refined_draw.main.jar classes.dex

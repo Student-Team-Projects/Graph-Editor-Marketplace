@@ -1,6 +1,8 @@
 {
   "jarName" : "graph-editor-plugin-server.plugins.turbo_matching.main.jar",
   "pluginClassName" : "com.example.graph_editor.plugins.turbo_matching.TurboMatching",
-  "version" : 4,
-  "requiresDrawingPermission" : false
+  "version" : 5,
+  "pluginType" : "EditingPlugin",
+  "supportsDirectedGraphs" : false,
+  "supportsUndirectedGraphs" : true
 }
