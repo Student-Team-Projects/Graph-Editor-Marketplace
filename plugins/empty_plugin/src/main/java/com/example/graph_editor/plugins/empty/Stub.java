@@ -1,21 +1,25 @@
 package com.example.graph_editor.plugins.empty;
 
-import graph_editor.extensions.EditingPlugin;
-import graph_editor.extensions.OnGraphOptionSelection;
-import java.util.Collections;
+import graph_editor.extensions.Plugin;
 
-public class Stub implements EditingPlugin {
+public class Stub implements Plugin {
     @Override
-    public void activate(Proxy<OnGraphOptionSelection> proxy) {
+    public void activate(Proxy proxy) {
         System.out.println("stub activates");
     }
+
     @Override
-    public void deactivate(Proxy<OnGraphOptionSelection> proxy) {
+    public void deactivate(Proxy proxy) {
         System.out.println("stub deactivates");
     }
+
     @Override
-    public Iterable<String> usedPropertiesNames() {
-        System.out.println("stub usedProperties");
-        return Collections.emptyList();
+    public boolean supportsDirectedGraphs() {
+        return true;
+    }
+
+    @Override
+    public boolean supportsUndirectedGraphs() {
+        return true;
     }
 }

@@ -3,8 +3,8 @@ package com.example.graph_editor.plugins.refined_draw;
 import graph_editor.draw.IGraphDrawer;
 import graph_editor.draw.point_mapping.CanvasDrawer;
 import graph_editor.draw.point_mapping.PointMapper;
-import graph_editor.extensions.DrawingPlugin;
 import graph_editor.extensions.OnPropertyReaderSelection;
+import graph_editor.extensions.Plugin;
 import graph_editor.geometry.Point;
 import graph_editor.graph.Edge;
 import graph_editor.graph.GraphElement;
@@ -17,7 +17,7 @@ import graph_editor.visual.GraphVisualization;
 import java.util.*;
 import java.util.List;
 
-public class RefinedDraw implements DrawingPlugin {
+public class RefinedDraw implements Plugin.DrawingPlugin {
     private static final String vertexGroup = "color::vertex::";
     private static final String edgeGroup = "color::edge::";
 
@@ -26,20 +26,29 @@ public class RefinedDraw implements DrawingPlugin {
     private final ChosenProperty edgeColor = new ChosenProperty();
 
     @Override
-    public void activate(Proxy<OnPropertyReaderSelection> proxy) {
-        proxy.registerOnSelection(this, "change vertex coloring property", new Reader(vertexGroup, vertexColor));
-        proxy.registerOnSelection(this, "change vertex border property", new Reader(vertexGroup, borderColor));
-        proxy.registerOnSelection(this, "change edge coloring property", new Reader(edgeGroup, edgeColor));
+    public IGraphDrawer<PropertySupportingGraph> getGraphDrawer(PointMapper mapper, CanvasDrawer canvasDrawer) {
+        return new Drawer(mapper, canvasDrawer);
+    }
+    @Override
+    public void activate(Proxy proxy) {
+        proxy.registerDeclaredPropertiesReader(this, "change vertex coloring property", new Reader(vertexGroup, vertexColor));
+        proxy.registerDeclaredPropertiesReader(this, "change vertex border property", new Reader(vertexGroup, borderColor));
+        proxy.registerDeclaredPropertiesReader(this, "change edge coloring property", new Reader(edgeGroup, edgeColor));
     }
 
     @Override
-    public void deactivate(Proxy<OnPropertyReaderSelection> proxy) {
+    public void deactivate(Proxy proxy) {
         proxy.releasePluginResources(this);
     }
 
     @Override
-    public IGraphDrawer<PropertySupportingGraph> getGraphDrawer(PointMapper mapper, CanvasDrawer canvasDrawer) {
-        return new Drawer(mapper, canvasDrawer);
+    public boolean supportsDirectedGraphs() {
+        return false;
+    }
+
+    @Override
+    public boolean supportsUndirectedGraphs() {
+        return true;
     }
 
     private static class Reader implements OnPropertyReaderSelection {

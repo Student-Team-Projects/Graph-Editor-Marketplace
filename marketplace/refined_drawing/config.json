@@ -1,8 +1,5 @@
 {
   "jarName" : "graph-editor-plugin-server.plugins.refined_draw.main.jar",
   "pluginClassName" : "com.example.graph_editor.plugins.refined_draw.RefinedDraw",
-  "version" : 2,
-  "pluginType" : "DrawingPlugin",
-  "supportsDirectedGraphs" : false,
-  "supportsUndirectedGraphs" : true
+  "version" : 3
 }

@@ -1,7 +1,7 @@
 package com.example.graph_editor.plugins.turbo_matching;
 
-import graph_editor.extensions.EditingPlugin;
-import graph_editor.extensions.OnGraphOptionSelection;
+import graph_editor.extensions.Plugin;
+import graph_editor.extensions.StackCapture;
 import graph_editor.graph.*;
 import graph_editor.properties.GraphDebuilder;
 import graph_editor.properties.PropertyGraphBuilder;
@@ -11,27 +11,37 @@ import graph_editor.visual.GraphVisualization;
 
 import java.util.*;
 
-public class TurboMatching implements EditingPlugin {
+public class TurboMatching implements Plugin.DrawablePropertyUser {
     private static final String vertexProperty = "color::vertex::turbo_matching";
     private static final String edgeProperty = "color::edge::turbo_matching";
     private static final Iterable<String> used = Arrays.asList(vertexProperty, edgeProperty);
 
     @Override
-    public void activate(Proxy<OnGraphOptionSelection> proxy) {
-        proxy.registerOnSelection(this, "evaluate matching", new Handler());
+    public Iterable<String> usedDrawablesNames() {
+        return used;
     }
 
     @Override
-    public void deactivate(Proxy<OnGraphOptionSelection> proxy) {
+    public void activate(Proxy proxy) {
+        proxy.registerStackCapture(this, "evaluate matching", new Handler());
+    }
+
+    @Override
+    public void deactivate(Proxy proxy) {
         proxy.releasePluginResources(this);
     }
 
     @Override
-    public Iterable<String> usedPropertiesNames() {
-        return used;
+    public boolean supportsDirectedGraphs() {
+        return true;
     }
 
-    private static class Handler implements OnGraphOptionSelection {
+    @Override
+    public boolean supportsUndirectedGraphs() {
+        return false;
+    }
+
+    private static class Handler implements StackCapture {
         @Override
         public void handle(VersionStack<GraphVisualization<PropertySupportingGraph>> versionStack) {
             PropertySupportingGraph graph = versionStack.getCurrent().getGraph();
