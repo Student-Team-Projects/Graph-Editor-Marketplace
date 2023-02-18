@@ -11,7 +11,7 @@ import graph_editor.visual.GraphVisualization;
 
 import java.util.*;
 
-public class TurboMatching implements Plugin.DrawablePropertyUser {
+public class TurboMatching extends Plugin {
     private static final String vertexProperty = "color::vertex::turbo_matching";
     private static final String edgeProperty = "color::edge::turbo_matching";
     private static final Iterable<String> used = Arrays.asList(vertexProperty, edgeProperty);
@@ -127,7 +127,7 @@ public class TurboMatching implements Plugin.DrawablePropertyUser {
             PropertySupportingGraph graph = visualization.getGraph();
             UndirectedGraph.Builder builder = new UndirectedGraph.Builder(graph.getVertices().size());
             BuilderVisualizer visualizer = new BuilderVisualizer();
-            PropertyGraphBuilder propertyGraphBuilder = GraphDebuilder.deBuild(graph, builder, visualizer, visualization.getVisualization().entrySet());
+            PropertyGraphBuilder propertyGraphBuilder = GraphDebuilder.deBuild(graph, builder, visualizer, visualization.getVisualization());
             propertyGraphBuilder.registerProperty(vertexProperty);
             for (Vertex v : graph.getVertices()) {
                 propertyGraphBuilder.addElementProperty(v, vertexProperty, green.contains(v) ? "0x00ff00" : "0xff0000");
@@ -146,7 +146,7 @@ public class TurboMatching implements Plugin.DrawablePropertyUser {
             PropertySupportingGraph graph = visualization.getGraph();
             UndirectedGraph.Builder builder = new UndirectedGraph.Builder(graph.getVertices().size());
             BuilderVisualizer visualizer = new BuilderVisualizer();
-            PropertyGraphBuilder propertyGraphBuilder = GraphDebuilder.deBuild(graph, builder, visualizer, visualization.getVisualization().entrySet());
+            PropertyGraphBuilder propertyGraphBuilder = GraphDebuilder.deBuild(graph, builder, visualizer, visualization.getVisualization());
             propertyGraphBuilder.registerProperty(vertexProperty);
             return visualizer.generateVisual(propertyGraphBuilder.build());
         }

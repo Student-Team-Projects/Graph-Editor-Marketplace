@@ -1,5 +1,5 @@
 {
   "jarName" : "graph-editor-plugin-server.plugins.refined_draw.main.jar",
   "pluginClassName" : "com.example.graph_editor.plugins.refined_draw.RefinedDraw",
-  "version" : 3
+  "version" : 4
 }

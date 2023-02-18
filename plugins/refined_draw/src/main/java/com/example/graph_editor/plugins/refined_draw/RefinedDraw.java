@@ -11,13 +11,12 @@ import graph_editor.graph.GraphElement;
 import graph_editor.graph.Vertex;
 import graph_editor.properties.PropertyRepository;
 import graph_editor.properties.PropertySupportingGraph;
-import graph_editor.properties.PropertyWriter;
 import graph_editor.visual.GraphVisualization;
 
 import java.util.*;
 import java.util.List;
 
-public class RefinedDraw implements Plugin.DrawingPlugin {
+public class RefinedDraw extends Plugin {
     private static final String vertexGroup = "color::vertex::";
     private static final String edgeGroup = "color::edge::";
 
@@ -26,16 +25,11 @@ public class RefinedDraw implements Plugin.DrawingPlugin {
     private final ChosenProperty edgeColor = new ChosenProperty();
 
     @Override
-    public IGraphDrawer<PropertySupportingGraph> getGraphDrawer(PointMapper mapper, CanvasDrawer canvasDrawer) {
-        return new Drawer(mapper, canvasDrawer);
-    }
-    @Override
     public void activate(Proxy proxy) {
         proxy.registerDeclaredPropertiesReader(this, "change vertex coloring property", new Reader(vertexGroup, vertexColor));
         proxy.registerDeclaredPropertiesReader(this, "change vertex border property", new Reader(vertexGroup, borderColor));
         proxy.registerDeclaredPropertiesReader(this, "change edge coloring property", new Reader(edgeGroup, edgeColor));
     }
-
     @Override
     public void deactivate(Proxy proxy) {
         proxy.releasePluginResources(this);
@@ -51,6 +45,11 @@ public class RefinedDraw implements Plugin.DrawingPlugin {
         return true;
     }
 
+    @Override
+    public Iterable<graph_editor.extensions.Plugin.Drawer> getGraphDrawers() {
+        return Collections.singleton(new DrawerFactory());
+    }
+
     private static class Reader implements OnPropertyReaderSelection {
         private final String groupName;
         private final ChosenProperty choice;
@@ -59,14 +58,11 @@ public class RefinedDraw implements Plugin.DrawingPlugin {
             this.choice = choice;
         }
         @Override
-        public List<SettingChoice> handle(List<PropertyWriter> list) {
+        public List<SettingChoice> handle(List<String> list) {
             List<SettingChoice> result = new ArrayList<>();
-            for (PropertyWriter writer : list) {
-                Iterable<String> used = writer.usedPropertiesNames();
-                for (String propertyName : used) {
-                    if (propertyName.startsWith(groupName)) {
-                        result.add(new Choice(propertyName, choice));
-                    }
+            for (String propertyName : list) {
+                if (propertyName.startsWith(groupName)) {
+                    result.add(new Choice(propertyName, choice));
                 }
             }
             return result;
@@ -92,6 +88,13 @@ public class RefinedDraw implements Plugin.DrawingPlugin {
             property.name = name;
         }
     }
+    private class DrawerFactory implements Plugin.Drawer {
+        @Override
+        public IGraphDrawer<PropertySupportingGraph> getGraphDrawer(PointMapper pointMapper, CanvasDrawer canvasDrawer) {
+            return new Drawer(pointMapper, canvasDrawer);
+        }
+    }
+
     private class Drawer implements IGraphDrawer<PropertySupportingGraph> {
         private static final float radius = 20.0f;
         private static final int defaultColor = 0x00000000; //black
@@ -110,9 +113,9 @@ public class RefinedDraw implements Plugin.DrawingPlugin {
             Map<Edge, String> edgeMap = new HashMap<>();
 
             PropertySupportingGraph graph = visual.getGraph();
-            readToMap(graph, vertexColor, graph.getVertices(), vertexMap);
-            readToMap(graph, borderColor, graph.getVertices(), borderMap);
-            readToMap(graph, edgeColor, graph.getEdges(), edgeMap);
+            readToVMap(graph, vertexColor, graph.getVertices(), vertexMap);
+            readToVMap(graph, borderColor, graph.getVertices(), borderMap);
+            readToEMap(graph, edgeColor, graph.getEdges(), edgeMap);
 
             Map<Vertex, Point> coordinates = visual.getVisualization();
             for (Vertex v : graph.getVertices()) {
@@ -146,9 +149,19 @@ public class RefinedDraw implements Plugin.DrawingPlugin {
             }
         }
 
-        private <T extends GraphElement> void readToMap(PropertyRepository repository, ChosenProperty property, Iterable<T> source, Map<T, String> target) {
+        private void readToVMap(PropertyRepository repository, ChosenProperty property, Iterable<Vertex> source, Map<Vertex, String> target) {
             if (property.name != null) {
-                for (T element : source) {
+                for (Vertex element : source) {
+                    String color = repository.getPropertyValue(property.name, element);
+                    if (color != null) {
+                        target.put(element, color);
+                    }
+                }
+            }
+        }
+        private void readToEMap(PropertyRepository repository, ChosenProperty property, Iterable<Edge> source, Map<Edge, String> target) {
+            if (property.name != null) {
+                for (Edge element : source) {
                     String color = repository.getPropertyValue(property.name, element);
                     if (color != null) {
                         target.put(element, color);
