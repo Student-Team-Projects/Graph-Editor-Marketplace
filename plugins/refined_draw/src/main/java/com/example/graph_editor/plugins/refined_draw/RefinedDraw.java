@@ -97,7 +97,7 @@ public class RefinedDraw extends Plugin {
 
     private class Drawer implements IGraphDrawer<PropertySupportingGraph> {
         private static final float radius = 20.0f;
-        private static final int defaultColor = 0x00000000; //black
+        private static final int defaultColor = 0xff000000; //black
         private final PointMapper mapper;
         private final CanvasDrawer drawer;
 

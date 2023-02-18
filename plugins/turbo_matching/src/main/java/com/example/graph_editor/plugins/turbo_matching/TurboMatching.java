@@ -130,14 +130,14 @@ public class TurboMatching extends Plugin {
             PropertyGraphBuilder propertyGraphBuilder = GraphDebuilder.deBuild(graph, builder, visualizer, visualization.getVisualization());
             propertyGraphBuilder.registerProperty(vertexProperty);
             for (Vertex v : graph.getVertices()) {
-                propertyGraphBuilder.addElementProperty(v, vertexProperty, green.contains(v) ? "0x00ff00" : "0xff0000");
+                propertyGraphBuilder.addElementProperty(v, vertexProperty, green.contains(v) ? "0xff00ff00" : "0xffff0000");
             }
             propertyGraphBuilder.registerProperty(edgeProperty);
             for (Edge e : graph.getEdges()) {
                 propertyGraphBuilder.addElementProperty(
                         e,
                         edgeProperty,
-                        matching.get(e.getSource()).equals(e.getTarget()) ? "matching" : "non_matching"
+                        matching.get(e.getSource()).equals(e.getTarget()) ? "0xff7f0000" : "0xff7f7f7f"
                 );
             }
             return visualizer.generateVisual(propertyGraphBuilder.build());
