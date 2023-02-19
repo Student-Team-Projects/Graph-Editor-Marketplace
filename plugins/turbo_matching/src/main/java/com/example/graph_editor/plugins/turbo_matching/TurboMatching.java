@@ -150,6 +150,7 @@ public class TurboMatching extends Plugin {
             BuilderVisualizer visualizer = new BuilderVisualizer();
             PropertyGraphBuilder propertyGraphBuilder = GraphDebuilder.deBuild(graph, new UndirectedGraph.Builder(0), visualizer, visualization.getVisualization());
             propertyGraphBuilder.registerProperty(vertexProperty);
+            propertyGraphBuilder.registerProperty(edgeProperty);
             return visualizer.generateVisual(propertyGraphBuilder.build());
         }
     }
