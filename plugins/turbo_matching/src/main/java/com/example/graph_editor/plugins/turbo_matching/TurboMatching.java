@@ -136,11 +136,13 @@ public class TurboMatching extends Plugin {
             }
             propertyGraphBuilder.registerProperty(edgeProperty);
             for (Edge e : graph.getEdges()) {
+                Vertex match = matching.get(e.getSource());
                 //TODO same as above todo
                 propertyGraphBuilder.addElementProperty(
                         e,
                         edgeProperty,
-                        matching.get(e.getSource()).equals(e.getTarget()) ? "ff0000ff" : "ff7f7f7f"
+                        match != null && match.equals(e.getTarget())
+                                ? "ff0000ff" : "ff7f7f7f"
                 );
             }
             return visualizer.generateVisual(propertyGraphBuilder.build());
