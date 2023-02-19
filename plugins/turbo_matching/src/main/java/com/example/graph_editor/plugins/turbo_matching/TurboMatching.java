@@ -33,12 +33,12 @@ public class TurboMatching extends Plugin {
 
     @Override
     public boolean supportsDirectedGraphs() {
-        return true;
+        return false;
     }
 
     @Override
     public boolean supportsUndirectedGraphs() {
-        return false;
+        return true;
     }
 
     private static class Handler implements StackCapture {
@@ -62,7 +62,9 @@ public class TurboMatching extends Plugin {
                 if (vColor.contains(adj)) {
                     return true;
                 } else {
-                    otherColor.add(adj);
+                    if (!otherColor.add(adj)) {
+                        continue;
+                    }
                     if (visit(adj, otherColor, vColor)) {
                         return true;
                     }
@@ -125,28 +127,28 @@ public class TurboMatching extends Plugin {
 
         private GraphVisualization<PropertySupportingGraph> saveProperties(GraphVisualization<PropertySupportingGraph> visualization, Set<Vertex> green, Map<Vertex, Vertex> matching) {
             PropertySupportingGraph graph = visualization.getGraph();
-            UndirectedGraph.Builder builder = new UndirectedGraph.Builder(graph.getVertices().size());
             BuilderVisualizer visualizer = new BuilderVisualizer();
-            PropertyGraphBuilder propertyGraphBuilder = GraphDebuilder.deBuild(graph, builder, visualizer, visualization.getVisualization());
+            PropertyGraphBuilder propertyGraphBuilder = GraphDebuilder.deBuild(graph, new UndirectedGraph.Builder(0), visualizer, visualization.getVisualization());
             propertyGraphBuilder.registerProperty(vertexProperty);
             for (Vertex v : graph.getVertices()) {
-                propertyGraphBuilder.addElementProperty(v, vertexProperty, green.contains(v) ? "0xff00ff00" : "0xffff0000");
+                //TODO actually should not add property to v from old graph but to corresponding one in propertyGraphBuilder
+                propertyGraphBuilder.addElementProperty(v, vertexProperty, green.contains(v) ? "ff00ff00" : "ffff0000");
             }
             propertyGraphBuilder.registerProperty(edgeProperty);
             for (Edge e : graph.getEdges()) {
+                //TODO same as above todo
                 propertyGraphBuilder.addElementProperty(
                         e,
                         edgeProperty,
-                        matching.get(e.getSource()).equals(e.getTarget()) ? "0xff7f0000" : "0xff7f7f7f"
+                        matching.get(e.getSource()).equals(e.getTarget()) ? "ff0000ff" : "ff7f7f7f"
                 );
             }
             return visualizer.generateVisual(propertyGraphBuilder.build());
         }
         private GraphVisualization<PropertySupportingGraph> resetProperties(GraphVisualization<PropertySupportingGraph> visualization) {
             PropertySupportingGraph graph = visualization.getGraph();
-            UndirectedGraph.Builder builder = new UndirectedGraph.Builder(graph.getVertices().size());
             BuilderVisualizer visualizer = new BuilderVisualizer();
-            PropertyGraphBuilder propertyGraphBuilder = GraphDebuilder.deBuild(graph, builder, visualizer, visualization.getVisualization());
+            PropertyGraphBuilder propertyGraphBuilder = GraphDebuilder.deBuild(graph, new UndirectedGraph.Builder(0), visualizer, visualization.getVisualization());
             propertyGraphBuilder.registerProperty(vertexProperty);
             return visualizer.generateVisual(propertyGraphBuilder.build());
         }

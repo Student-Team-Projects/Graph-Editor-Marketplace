@@ -1,4 +1,3 @@
 0. write config.json
 1. build jar from intellij artifacts
-2. dalvik-exchange --dex --min-sdk-version=26 --output classes.dex graph-editor-plugin-server.plugins.empty_plugin.main.jar
-3. aapt add graph-editor-plugin-server.plugins.empty_plugin.main.jar classes.dex
+2. execute script

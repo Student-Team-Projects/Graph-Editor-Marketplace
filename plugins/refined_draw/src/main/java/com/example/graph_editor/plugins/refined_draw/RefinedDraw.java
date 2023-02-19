@@ -7,7 +7,6 @@ import graph_editor.extensions.OnPropertyReaderSelection;
 import graph_editor.extensions.Plugin;
 import graph_editor.geometry.Point;
 import graph_editor.graph.Edge;
-import graph_editor.graph.GraphElement;
 import graph_editor.graph.Vertex;
 import graph_editor.properties.PropertyRepository;
 import graph_editor.properties.PropertySupportingGraph;
@@ -65,11 +64,29 @@ public class RefinedDraw extends Plugin {
                     result.add(new Choice(propertyName, choice));
                 }
             }
+            result.add(new Reset(choice));
             return result;
         }
     }
     private static class ChosenProperty {
         String name;
+    }
+    private static class Reset implements OnPropertyReaderSelection.SettingChoice {
+        private final ChosenProperty property;
+
+        private Reset(ChosenProperty property) {
+            this.property = property;
+        }
+
+        @Override
+        public String getName() {
+            return "none";
+        }
+
+        @Override
+        public void choose() {
+            property.name = null;
+        }
     }
     private static class Choice implements OnPropertyReaderSelection.SettingChoice {
         private final String name;
@@ -97,7 +114,8 @@ public class RefinedDraw extends Plugin {
 
     private class Drawer implements IGraphDrawer<PropertySupportingGraph> {
         private static final float radius = 20.0f;
-        private static final int defaultColor = 0xff000000; //black
+        private static final int defaultColor = 0xff000000;
+        private static final int errorColor = 0xff7f7f7f;
         private final PointMapper mapper;
         private final CanvasDrawer drawer;
 
@@ -119,33 +137,34 @@ public class RefinedDraw extends Plugin {
 
             Map<Vertex, Point> coordinates = visual.getVisualization();
             for (Vertex v : graph.getVertices()) {
-                int color = toInt(borderMap.get(v));
+                int color = borderColor.name != null ? toInt(borderMap.get(v)) : defaultColor;
                 drawer.drawCircle(mapper.mapIntoView(
                         coordinates.get(v)),
                         radius,
-                        borderColor.name == null ? defaultColor : color);
+                        color);
             }
             for (Vertex v : graph.getVertices()) {
-                int color = toInt(vertexMap.get(v));
+                int color = vertexColor.name != null ? toInt(vertexMap.get(v)) : defaultColor;
                 drawer.drawCircle(mapper.mapIntoView(
                                 coordinates.get(v)),
-                        radius / 2,
-                        vertexColor.name == null ? defaultColor : color);
+                        radius * 0.7f,
+                        color);
             }
             for (Edge e : graph.getEdges()) {
-                int color = toInt(edgeMap.get(e));
+                int color = edgeColor.name != null ? toInt(edgeMap.get(e)) : defaultColor;
                 drawer.drawLine(
                         mapper.mapIntoView(coordinates.get(e.getSource())),
                         mapper.mapIntoView(coordinates.get(e.getTarget())),
-                        edgeColor.name == null ? defaultColor : color
+                        color
                 );
             }
         }
         private int toInt(String s) {
             try {
-                return Integer.parseInt(s);
+                return (int)Long.parseLong(s, 16);
             } catch (Exception e) {
-                return Drawer.defaultColor;
+                System.out.println("failed to parse " + s);
+                return Drawer.errorColor;
             }
         }
 
